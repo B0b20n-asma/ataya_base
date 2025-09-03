@@ -1,0 +1,122 @@
+
+
+{% extends "bmab/base.html" %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+<h1 class="text-center mb-4">Dashboard</h1>
+
+<h3>Members Contributions</h3>
+<a href="{% url 'add_member' %}" class="btn btn-success mb-2">Add Member</a>
+<table id="membersTable" class="table table-striped">
+    <thead>
+        <tr>
+            <th>Number</th><th>Name</th><th>Address</th><th>Phone</th><th>Total Amount</th><th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for member in members %}
+        <tr>
+            <td>{{ member.number }}</td>
+            <td>{{ member.name }}</td>
+            <td>{{ member.address }}</td>
+            <td>{{ member.phone_number }}</td>
+            <td>{{ member.total_amount }}</td>
+            <td>
+                <a href="{% url 'view_member' member.id %}" class="btn btn-info btn-sm">View</a>
+                <a href="{% url 'update_member' member.id %}" class="btn btn-primary btn-sm">Edit</a>
+                <a href="{% url 'delete_member' member.id %}" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure you want to delete this member?');">Delete</a>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<h3>Traders Contributions</h3>
+<a href="{% url 'add_trader' %}" class="btn btn-success mb-2">Add Trader</a>
+<table id="tradersTable" class="table table-striped">
+    <thead>
+        <tr>
+            <th>Number</th><th>Name</th><th>Amount Per Month</th><th>Total Months Paid</th><th>Total</th><th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for trader in traders %}
+        <tr>
+            <td>{{ trader.number }}</td>
+            <td>{{ trader.name }}</td>
+            <td>{{ trader.amount_per_month }}</td>
+            <td>{{ trader.total_months_subscribed }}</td>
+            <td>{{ trader.total }}</td>
+            <td>
+                <a href="{% url 'view_trader' trader.id %}" class="btn btn-info btn-sm">View</a>
+                <a href="{% url 'update_trader' trader.id %}" class="btn btn-primary btn-sm">Edit</a>
+                <a href="{% url 'delete_trader' trader.id %}" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure you want to delete this trader?');">Delete</a>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<h3>Financial Reports</h3>
+<a href="{% url 'add_financial_report' %}" class="btn btn-success mb-2">Add Financial Report</a>
+<table id="reportsTable" class="table table-striped">
+    <thead>
+        <tr>
+            <th>Year</th><th>Total Income</th><th>Total Expenditure</th><th>Yearly Balance</th><th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for report in reports %}
+        <tr>
+            <td>{{ report.year }}</td>
+            <td>{{ report.total_income }}</td>
+            <td>{{ report.total_expenditure }}</td>
+            <td>{{ report.yearly_income }}</td>
+            <td>
+                <a href="{% url 'view_financial_report' report.id %}" class="btn btn-info btn-sm">View</a>
+                <a href="{% url 'update_financial_report' report.id %}" class="btn btn-primary btn-sm">Edit</a>
+                <a href="{% url 'delete_financial_report' report.id %}" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure you want to delete this report?');">Delete</a>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    $(document).ready(function() {
+        // Members Table
+        $('#membersTable').DataTable({
+            dom: 'Bfrtip',
+            buttons: [
+                { extend: 'excelHtml5', title: 'Members Contributions' },
+                { extend: 'pdfHtml5', title: 'Members Contributions' },
+                { extend: 'print', title: 'Members Contributions' }
+            ]
+        });
+
+        // Traders Table
+        $('#tradersTable').DataTable({
+            dom: 'Bfrtip',
+            buttons: [
+                { extend: 'excelHtml5', title: 'Traders Contributions' },
+                { extend: 'pdfHtml5', title: 'Traders Contributions' },
+                { extend: 'print', title: 'Traders Contributions' }
+            ]
+        });
+
+        // Financial Reports Table
+        $('#reportsTable').DataTable({
+            dom: 'Bfrtip',
+            buttons: [
+                { extend: 'excelHtml5', title: 'Financial Reports' },
+                { extend: 'pdfHtml5', title: 'Financial Reports' },
+                { extend: 'print', title: 'Financial Reports' }
+            ]
+        });
+    });
+</script>
+{% endblock %}

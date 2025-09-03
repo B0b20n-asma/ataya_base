@@ -1,0 +1,246 @@
+
+
+# FOR DASHBOARD 
+
+{% extends "bmab/base.html" %}
+{% block title %}Dashboard{% endblock %}
+{% block content %}
+<h1 class="text-center mb-4">Dashboard</h1>
+
+<h3>Members Contributions</h3>
+<a href="{% url 'add_member' %}" class="btn btn-success mb-2">Add Member</a>
+<table class="table table-striped">
+<thead>
+<tr>
+<th>Number</th><th>Name</th><th>Address</th><th>Phone</th><th>Total Amount</th><th>Actions</th>
+</tr>
+</thead>
+<tbody>
+{% for member in members %}
+<tr>
+<td>{{ member.number }}</td>
+<td>{{ member.name }}</td>
+<td>{{ member.address }}</td>
+<td>{{ member.phone_number }}</td>
+<td>{{ member.total_amount }}</td>
+<td>
+<a href="{% url 'update_member' member.id %}" class="btn btn-primary btn-sm">Edit</a>
+<a href="{% url 'delete_member' member.id %}" class="btn btn-danger btn-sm">Delete</a>
+</td>
+</tr>
+{% endfor %}
+</tbody>
+</table>
+
+<h3>Traders Contributions</h3>
+<a href="{% url 'add_trader' %}" class="btn btn-success mb-2">Add Trader</a>
+<table class="table table-striped">
+<thead>
+<tr>
+<th>Number</th><th>Name</th><th>Total Months Paid</th><th>Total</th><th>Actions</th>
+</tr>
+</thead>
+<tbody>
+{% for trader in traders %}
+<tr>
+<td>{{ trader.number }}</td>
+<td>{{ trader.name }}</td>
+<td>{{ trader.total_months_subscribed }}</td>
+<td>{{ trader.total }}</td>
+<td>
+<a href="{% url 'update_trader' trader.id %}" class="btn btn-primary btn-sm">Edit</a>
+<a href="{% url 'delete_trader' trader.id %}" class="btn btn-danger btn-sm">Delete</a>
+</td>
+</tr>
+{% endfor %}
+</tbody>
+</table>
+
+{% endblock %}
+
+
+# FOR BASE.HTML 
+
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{% block title %}Bottom Manago{% endblock %}</title>
+
+<!-- ✅ Bootstrap 5 -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+<!-- ✅ Your custom styles -->
+<link rel="stylesheet" href="{% static 'css/style.css' %}">
+
+<!-- ✅ DataTables with Bootstrap 5 integration -->
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
+<link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.4.1/css/buttons.bootstrap5.min.css">
+
+<style>
+body { background-color: #e6f2ff; }
+.navbar { background-color: #006600; }
+.nav-link, .navbar-brand { color: white !important; }
+.table thead { background-color: #0099cc; color: white; }
+</style>
+</head>
+<body>
+<nav class="navbar navbar-expand-lg navbar-dark">
+  <div class="container-fluid">
+    <a class="navbar-brand" href="{% url 'dashboard' %}">Bottom Manago</a>
+    <div class="collapse navbar-collapse">
+      <ul class="navbar-nav ms-auto">
+        {% if user.is_authenticated %}
+        <li class="nav-item"><a class="nav-link" href="{% url 'logout' %}">Logout</a></li>
+        {% else %}
+        <li class="nav-item"><a class="nav-link" href="{% url 'login' %}">Login</a></li>
+        {% endif %}
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<div class="container mt-4">
+    {% block content %}{% endblock %}
+</div>
+
+<!-- ✅ Bootstrap 5 Bundle (includes Popper) -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+<!-- ✅ jQuery -->
+<script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+
+<!-- ✅ DataTables core + Bootstrap 5 integration -->
+<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+
+<!-- ✅ DataTables Buttons + Bootstrap 5 integration -->
+<script src="https://cdn.datatables.net/buttons/2.4.1/js/dataTables.buttons.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.bootstrap5.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.html5.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.print.min.js"></script>
+
+<!-- ✅ JSZip for Excel export -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+
+<!-- ✅ pdfmake for PDF export -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
+
+</body>
+</html>
+
+
+# FOR DASHBOARD.HTML
+
+{% extends "bmab/base.html" %}
+{% block title %}Dashboard{% endblock %}
+{% block content %}
+<h1 class="text-center mb-4">Dashboard</h1>
+
+<!-- ================= Members Table ================= -->
+<h3>Members Contributions</h3>
+<a href="{% url 'add_member' %}" class="btn btn-success mb-2">Add Member</a>
+<table id="membersTable" class="table table-striped table-bordered">
+<thead>
+<tr>
+<th>Number</th><th>Name</th><th>Address</th><th>Phone</th><th>Total Amount</th><th>Actions</th>
+</tr>
+</thead>
+<tbody>
+{% for member in members %}
+<tr>
+<td>{{ member.number }}</td>
+<td>{{ member.names }}</td>
+<td>{{ member.address }}</td>
+<td>{{ member.phone_number }}</td>
+<td>{{ member.total_amount }}</td>
+<td>
+<a href="{% url 'view_member' member.id %}" class="btn btn-info btn-sm">View</a>
+<a href="{% url 'update_member' member.id %}" class="btn btn-primary btn-sm">Edit</a>
+<a href="{% url 'delete_member' member.id %}" class="btn btn-danger btn-sm"
+   onclick="return confirm('Are you sure you want to delete this member?');">Delete</a>
+</td>
+</tr>
+{% endfor %}
+</tbody>
+</table>
+
+<!-- ================= Traders Table ================= -->
+<h3>Traders Contributions</h3>
+<a href="{% url 'add_trader' %}" class="btn btn-success mb-2">Add Trader</a>
+<table id="tradersTable" class="table table-striped table-bordered">
+<thead>
+<tr>
+<th>Number</th><th>Name</th><th>Amount Per Month</th><th>Total Months Paid</th><th>Total</th><th>Actions</th>
+</tr>
+</thead>
+<tbody>
+{% for trader in traders %}
+<tr>
+<td>{{ trader.number }}</td>
+<td>{{ trader.name }}</td>
+<td>{{ trader.amount_per_month }}</td>
+<td>{{ trader.total_months_subscribed }}</td>
+<td>{{ trader.total }}</td>
+<td>
+<a href="{% url 'view_trader' trader.id %}" class="btn btn-info btn-sm">View</a>
+<a href="{% url 'update_trader' trader.id %}" class="btn btn-primary btn-sm">Edit</a>
+<a href="{% url 'delete_trader' trader.id %}" class="btn btn-danger btn-sm"
+   onclick="return confirm('Are you sure you want to delete this trader?');">Delete</a>
+</td>
+</tr>
+{% endfor %}
+</tbody>
+</table>
+
+<!-- ================= Financial Reports Table ================= -->
+<h3>Financial Reports</h3>
+<a href="{% url 'add_financial_report' %}" class="btn btn-success mb-2">Add Financial Report</a>
+<table id="reportsTable" class="table table-striped table-bordered">
+<thead>
+<tr>
+<th>Year</th><th>Total Income</th><th>Total Expenditure</th><th>Yearly Balance</th><th>Actions</th>
+</tr>
+</thead>
+<tbody>
+{% for report in reports %}
+<tr>
+<td>{{ report.year }}</td>
+<td>{{ report.total_income }}</td>
+<td>{{ report.total_expenditure }}</td>
+<td>{{ report.yearly_income }}</td>
+<td>
+<a href="{% url 'view_financial_report' report.id %}" class="btn btn-info btn-sm">View</a>
+<a href="{% url 'update_financial_report' report.id %}" class="btn btn-primary btn-sm">Edit</a>
+<a href="{% url 'delete_financial_report' report.id %}" class="btn btn-danger btn-sm"
+   onclick="return confirm('Are you sure you want to delete this report?');">Delete</a>
+</td>
+</tr>
+{% endfor %}
+</tbody>
+</table>
+
+<!-- ✅ DataTables script -->
+<script>
+$(document).ready(function() {
+    function setupTable(tableId, title) {
+        $('#' + tableId).DataTable({
+            dom: '<"row mb-3"<"col-md-6"l><"col-md-6 text-end"B>>rtip',
+            buttons: [
+                { extend: 'excelHtml5', className: 'btn btn-success btn-sm', title: title },
+                { extend: 'pdfHtml5', className: 'btn btn-danger btn-sm', title: title },
+                { extend: 'print', className: 'btn btn-info btn-sm', title: title }
+            ]
+        });
+    }
+
+    setupTable('membersTable', 'Members Contributions');
+    setupTable('tradersTable', 'Traders Contributions');
+    setupTable('reportsTable', 'Financial Reports');
+});
+</script>
+
+{% endblock %}

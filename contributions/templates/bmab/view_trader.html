@@ -1,0 +1,206 @@
+
+
+{% extends "bmab/base.html" %}
+
+{% block title %}View Trader{% endblock %}
+
+{% block content %}
+<h2>Trader Details</h2>
+
+<!-- Export buttons -->
+<div class="mb-4">
+    <button id="printBtn" class="btn btn-outline-primary">
+        <i class="fas fa-print"></i> Print Details
+    </button>
+    <button id="pdfBtn" class="btn btn-outline-danger">
+        <i class="fas fa-file-pdf"></i> Export to PDF
+    </button>
+    <button id="excelBtn" class="btn btn-outline-success">
+        <i class="fas fa-file-excel"></i> Export to Excel
+    </button>
+</div>
+
+<table class="table table-bordered">
+    <tr>
+        <th>Number</th>
+        <td>{{ trader.number }}</td>
+    </tr>
+    <tr>
+        <th>Name</th>
+        <td>{{ trader.name }}</td> <!-- corrected -->
+    </tr>
+    <tr>
+        <th>Amount Per Month</th>
+        <td>{{ trader.amount_per_month }}</td>
+    </tr>
+    <tr>
+        <th>Total Months Paid</th>
+        <td>{{ trader.total_months_subscribed }}</td>
+    </tr>
+    <tr>
+        <th>Total</th>
+        <td>{{ trader.total }}</td>
+    </tr>
+
+    <!-- Monthly contributions -->
+    <tr><th>January</th><td>{{ trader.Jan }}</td></tr>
+    <tr><th>February</th><td>{{ trader.Feb }}</td></tr>
+    <tr><th>March</th><td>{{ trader.Mar }}</td></tr>
+    <tr><th>April</th><td>{{ trader.Apr }}</td></tr>
+    <tr><th>May</th><td>{{ trader.May }}</td></tr>
+    <tr><th>June</th><td>{{ trader.Jun}}</td></tr>
+    <tr><th>July</th><td>{{ trader.Jul}}</td></tr>
+    <tr><th>August</th><td>{{ trader.Aug}}</td></tr>
+    <tr><th>September</th><td>{{ trader.Sep }}</td></tr>
+    <tr><th>October</th><td>{{ trader.Oct}}</td></tr>
+    <tr><th>November</th><td>{{ trader.Nov }}</td></tr>
+    <tr><th>December</th><td>{{ trader.Dec }}</td></tr>
+</table>
+
+<a href="{% url 'dashboard' %}" class="btn btn-secondary"
+   onclick="return confirm('Are you sure you want to return to the dashboard?');">Back</a>
+
+<!-- Include necessary libraries -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+<script>
+// Function to print the trader details
+document.getElementById('printBtn').addEventListener('click', function() {
+    window.print();
+});
+
+// Function to export to PDF
+document.getElementById('pdfBtn').addEventListener('click', function() {
+    // Initialize jsPDF
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+    
+    // Add title
+    doc.setFontSize(16);
+    doc.text('Trader Details - ' + '{{ trader.name }}', 14, 15);
+    
+    // Add trader details
+    doc.setFontSize(12);
+    
+    let traderData = [
+        ['Trader Number', '{{ trader.number }}'],
+        ['Name', '{{ trader.name }}'],
+        ['Amount Per Month', '{{ trader.amount_per_month }}'],
+        ['Total Months Paid', '{{ trader.total_months_subscribed }}'],
+        ['Total Amount', '{{ trader.total }}']
+    ];
+    
+    doc.autoTable({
+        startY: 25,
+        head: [['Field', 'Value']],
+        body: traderData,
+        theme: 'grid'
+    });
+    
+    // Add monthly contributions
+    let finalY = doc.lastAutoTable.finalY + 10;
+    doc.text('Monthly Contributions', 14, finalY);
+    
+    let contributionsData = [
+        ['January', '{{ trader.Jan }}'],
+        ['February', '{{ trader.Feb }}'],
+        ['March', '{{ trader.Mar }}'],
+        ['April', '{{ trader.Apr }}'],
+        ['May', '{{ trader.May }}'],
+        ['June', '{{ trader.Jun }}'],
+        ['July', '{{ trader.Jul }}'],
+        ['August', '{{ trader.Aug }}'],
+        ['September', '{{ trader.Sep }}'],
+        ['October', '{{ trader.Oct }}'],
+        ['November', '{{ trader.Nov }}'],
+        ['December', '{{ trader.Dec }}']
+    ];
+    
+    doc.autoTable({
+        startY: finalY + 5,
+        head: [['Month', 'Contribution']],
+        body: contributionsData,
+        theme: 'grid'
+    });
+    
+    // Save the PDF
+    doc.save('Trader_Details_{{ trader.name }}_{{ trader.number }}.pdf');
+});
+
+// Function to export to Excel
+document.getElementById('excelBtn').addEventListener('click', function() {
+    // Prepare data for Excel
+    const traderData = [
+        ['Trader Details'],
+        ['Number', '{{ trader.number }}'],
+        ['Name', '{{ trader.name }}'],
+        ['Amount Per Month', '{{ trader.amount_per_month }}'],
+        ['Total Months Paid', '{{ trader.total_months_subscribed }}'],
+        ['Total Amount', '{{ trader.total }}'],
+        [''], // Empty row for spacing
+        ['Monthly Contributions'],
+        ['January', '{{ trader.Jan }}'],
+        ['February', '{{ trader.Feb }}'],
+        ['March', '{{ trader.Mar }}'],
+        ['April', '{{ trader.Apr }}'],
+        ['May', '{{ trader.May }}'],
+        ['June', '{{ trader.Jun }}'],
+        ['July', '{{ trader.Jul }}'],
+        ['August', '{{ trader.Aug }}'],
+        ['September', '{{ trader.Sep }}'],
+        ['October', '{{ trader.Oct }}'],
+        ['November', '{{ trader.Nov }}'],
+        ['December', '{{ trader.Dec }}']
+    ];
+    
+    // Create worksheet
+    const ws = XLSX.utils.aoa_to_sheet(traderData);
+    
+    // Create workbook
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Trader Details');
+    
+    // Generate Excel file and download
+    XLSX.writeFile(wb, 'Trader_Details_{{ trader.name }}_{{ trader.number }}.xlsx');
+});
+</script>
+
+<style>
+@media print {
+    .btn, #printBtn, #pdfBtn, #excelBtn {
+        display: none !important;
+    }
+    
+    body {
+        font-size: 12pt;
+        background: white;
+    }
+    
+    .table {
+        border: 1px solid #000;
+        font-size: 10pt;
+    }
+    
+    .table th, .table td {
+        border: 1px solid #000;
+        padding: 4px;
+    }
+    
+    h2 {
+        color: #000;
+    }
+}
+
+/* Style for export buttons */
+.btn {
+    margin-right: 8px;
+    margin-bottom: 8px;
+}
+
+.fas {
+    margin-right: 5px;
+}
+</style>
+{% endblock %}

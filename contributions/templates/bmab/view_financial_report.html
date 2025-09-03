@@ -1,0 +1,208 @@
+
+
+{% extends "bmab/base.html" %} 
+{% block title %}View Financial Report{% endblock %} 
+
+{% block content %} 
+<h2>Financial Report - {{ report.year }}</h2>
+
+<!-- Add export buttons -->
+<div class="mb-4">
+    <button id="printBtn" class="btn btn-outline-primary">
+        <i class="fas fa-print"></i> Print Report
+    </button>
+    <button id="pdfBtn" class="btn btn-outline-danger">
+        <i class="fas fa-file-pdf"></i> Export to PDF
+    </button>
+    <button id="excelBtn" class="btn btn-outline-success">
+        <i class="fas fa-file-excel"></i> Export to Excel
+    </button>
+</div>
+
+<h4>Income</h4>
+<table class="table table-bordered">
+    <tr>
+        <th>Balance Brought Forward</th>
+        <td>{{ report.balance_brought_forward }}</td>
+    </tr>
+    <tr>
+        <th>Total Members Contributions</th>
+        <td>{{ report.total_members }}</td>
+    </tr>
+    <tr>
+        <th>Total Traders Contributions</th>
+        <td>{{ report.total_traders }}</td>
+    </tr>
+    <tr>
+        <th>Remaining Sick/Death Contributions</th>
+        <td>{{ report.remaining_sick_death }}</td>
+    </tr>
+    <tr>
+        <th>Total Donors</th>
+        <td>{{ report.total_donors }}</td>
+    </tr>
+    <tr>
+        <th><strong>Total Income</strong></th>
+        <td><strong>{{ report.total_income }}</strong></td>
+    </tr>
+</table>
+
+<h4>Expenditure</h4>
+<table class="table table-bordered">
+    <tr>
+        <th>Withdrawal from Treasurer</th>
+        <td>{{ report.withdrawal_from_treasurer }}</td>
+    </tr>
+    <tr>
+        <th>Other Expenses</th>
+        <td>{{ report.other_expenses }}</td>
+    </tr>
+    <tr>
+        <th><strong>Total Expenditure</strong></th>
+        <td><strong>{{ report.total_expenditure }}</strong></td>
+    </tr>
+</table>
+
+<h4>Yearly Income</h4>
+<table class="table table-bordered">
+    <tr>
+        <th>Yearly Income (Income - Expenditure)</th>
+        <td>{{ report.yearly_income }}</td>
+    </tr>
+</table>
+
+<a href="{% url 'dashboard' %}" class="btn btn-secondary" onclick="return confirm('Are you sure you want to return to the dashboard?');">Back</a>
+
+<!-- Include necessary libraries -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+<script>
+// Function to print the report
+document.getElementById('printBtn').addEventListener('click', function() {
+    window.print();
+});
+
+// Function to export to PDF
+document.getElementById('pdfBtn').addEventListener('click', function() {
+    // Initialize jsPDF
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+    
+    // Add title
+    doc.setFontSize(16);
+    doc.text('Financial Report - {{ report.year }}', 14, 15);
+    
+    // Add income table
+    doc.setFontSize(12);
+    doc.text('Income', 14, 25);
+    
+    let incomeData = [
+        ['Balance Brought Forward', '{{ report.balance_brought_forward }}'],
+        ['Total Members Contributions', '{{ report.total_members }}'],
+        ['Total Traders Contributions', '{{ report.total_traders }}'],
+        ['Remaining Sick/Death Contributions', '{{ report.remaining_sick_death }}'],
+        ['Total Donors', '{{ report.total_donors }}'],
+        ['Total Income', '{{ report.total_income }}']
+    ];
+    
+    doc.autoTable({
+        startY: 30,
+        head: [['Item', 'Amount']],
+        body: incomeData,
+        theme: 'grid'
+    });
+    
+    // Add expenditure table
+    let finalY = doc.lastAutoTable.finalY + 10;
+    doc.text('Expenditure', 14, finalY);
+    
+    let expenditureData = [
+        ['Withdrawal from Treasurer', '{{ report.withdrawal_from_treasurer }}'],
+        ['Other Expenses', '{{ report.other_expenses }}'],
+        ['Total Expenditure', '{{ report.total_expenditure }}']
+    ];
+    
+    doc.autoTable({
+        startY: finalY + 5,
+        head: [['Item', 'Amount']],
+        body: expenditureData,
+        theme: 'grid'
+    });
+    
+    // Add yearly income table
+    finalY = doc.lastAutoTable.finalY + 10;
+    doc.text('Yearly Income', 14, finalY);
+    
+    let yearlyIncomeData = [
+        ['Yearly Income (Income - Expenditure)', '{{ report.yearly_income }}']
+    ];
+    
+    doc.autoTable({
+        startY: finalY + 5,
+        head: [['Description', 'Amount']],
+        body: yearlyIncomeData,
+        theme: 'grid'
+    });
+    
+    // Save the PDF
+    doc.save('Financial_Report_{{ report.year }}.pdf');
+});
+
+// Function to export to Excel
+document.getElementById('excelBtn').addEventListener('click', function() {
+    // Prepare data for Excel
+    const incomeData = [
+        ['Income'],
+        ['Balance Brought Forward', '{{ report.balance_brought_forward }}'],
+        ['Total Members Contributions', '{{ report.total_members }}'],
+        ['Total Traders Contributions', '{{ report.total_traders }}'],
+        ['Remaining Sick/Death Contributions', '{{ report.remaining_sick_death }}'],
+        ['Total Donors', '{{ report.total_donors }}'],
+        ['Total Income', '{{ report.total_income }}'],
+        [''], // Empty row for spacing
+        ['Expenditure'],
+        ['Withdrawal from Treasurer', '{{ report.withdrawal_from_treasurer }}'],
+        ['Other Expenses', '{{ report.other_expenses }}'],
+        ['Total Expenditure', '{{ report.total_expenditure }}'],
+        [''], // Empty row for spacing
+        ['Yearly Income'],
+        ['Yearly Income (Income - Expenditure)', '{{ report.yearly_income }}']
+    ];
+    
+    // Create worksheet
+    const ws = XLSX.utils.aoa_to_sheet(incomeData);
+    
+    // Create workbook
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Financial Report');
+    
+    // Generate Excel file and download
+    XLSX.writeFile(wb, 'Financial_Report_{{ report.year }}.xlsx');
+});
+</script>
+
+<style>
+@media print {
+    .btn, #printBtn, #pdfBtn, #excelBtn {
+        display: none !important;
+    }
+    
+    body {
+        font-size: 12pt;
+        background: white;
+    }
+    
+    .table {
+        border: 1px solid #000;
+        font-size: 10pt;
+    }
+    
+    .table th, .table td {
+        border: 1px solid #000;
+        padding: 4px;
+    }
+}
+</style>
+{% endblock %}
